@@ -1,19 +1,5 @@
 #!/usr/bin/env python
 #
-# Copyright 2015 The ChEMBL group.
-# Author: Nathan Dedman <ndedman@ebi.ac.uk>
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-
 # Copyright 2009 Facebook
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -28,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Implementation of an S3-like storage server based on local files.
+"""Implementation of an S3-like storage server, using Pymongo, MongoDB and Tornado.
 
 Useful to test features that will eventually run on S3, or if you want to
 run something locally that was once running on S3.
@@ -44,7 +30,12 @@ S3 client with this module:
     print c.get("mybucket", "mykey").body
 
 
-Don't forget to increase ULIMIT!
+Use s3cmd command line tool:
+
+    s3cmd mb s3://wibble
+    s3cmd put mytestfile.txt s3://wibble
+    s3cmd rb s3://wibble --force --recursive
+
 """
 
 import bisect
@@ -67,6 +58,9 @@ from pymongo import MongoClient
 from pymongo import ASCENDING
 import bson
 from bson.binary import Binary
+
+
+
 
 from tornado.log import enable_pretty_logging
 
@@ -91,7 +85,7 @@ class mongoS3(web.Application):
     """Implementation of an S3-like storage server based on MongoDB using PyMongo    
     
     * Added compatibility with the s3cmd command line utility
-    * File names of arbitrary length are supported (stored as meta data) - we're handling long IUPAC names!
+    * File names of arbitrary length are supported (stored as meta data)
     * Multipart upload suported
     
     """
@@ -309,7 +303,9 @@ class BucketHandler(BaseRequestHandler):
         
         start_pos = 0
         
-        # FIX THIS!!
+        # To do:
+        # Fix bisection by dict lookup
+        
         if marker:
             start_pos = bisect.bisect_right(objects, marker, start_pos)
         if prefix:
@@ -564,7 +560,6 @@ class ObjectHandler(BaseRequestHandler):
             bucket_name,object_name = args
         
         object_name = urllib.unquote(object_name)
-        
         
         bucket_object = self._get_bucket_object(bucket_name=bucket_name,object_name=object_name)
         
