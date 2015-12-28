@@ -7,3 +7,4 @@ S3 (AWS Simple Storage Service) server clone using MongoDB, PyMongo and Tornado.
 * As of yet, does not feature ACLs or authentication (to come!)
 * Multipart uploads appear as the contiguous orginal (although existing as 15Mb chunks)
 
+Functional POC, but needs some code refactorying, cleanup, tests.
